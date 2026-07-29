@@ -1,277 +1,265 @@
--- Carregando a Biblioteca Visual (Orion Lib)
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+-- Criando a Interface Principal (ScreenGui)
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local SoundService = game:GetService("SoundService")
 
-local Window = OrionLib:MakeWindow({
-    Name = "HUB Completo - Delta", 
-    HidePremium = true, 
-    SaveConfig = false, 
-    ConfigFolder = "DeltaHubConfig",
-    IntroText = "Carregando HUB..."
-})
+-- Criando o som de clique global para reutilizar nos botões
+local ClickSound = Instance.new("Sound")
+ClickSound.Name = "ClickSound"
+ClickSound.SoundId = "rbxassetid://140207837688369"
+ClickSound.Volume = 1
+ClickSound.Parent = SoundService
 
--- VARIÁVEIS DE CONFIGURAÇÃO
-local Config = {
-    PlayerESP = false,
-    ESPColor = Color3.fromRGB(0, 255, 128),
-    
-    NametagESP = false,
-    NametagColor = Color3.fromRGB(255, 255, 255),
-    
-    LineESP = false,
-    
-    HitboxAtiva = false,
-    HitboxTamanho = 2,
-    MostrarHitbox = false,
-    HitboxCor = Color3.fromRGB(255, 0, 0)
-}
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "BlenderStudioHub"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
+-- Fundo do Painel (Main Frame - Tamanho Aumentado)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 620, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -310, 0.5, -190)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20) -- Preto Escuro
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
 
---------------------------------------------------------------------------------
--- 1. CATEGORIA: ESP
---------------------------------------------------------------------------------
-local TabESP = Window:MakeTab({
-    Name = "ESP",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.Parent = MainFrame
 
-TabESP:AddToggle({
-    Name = "Player ESP (Highlight)",
-    Default = false,
-    Callback = function(Value)
-        Config.PlayerESP = Value
-    end    
-})
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Color3.fromRGB(255, 120, 0) -- Borda Laranja
+MainStroke.Thickness = 1.5
+MainStroke.Parent = MainFrame
 
-TabESP:AddColorpicker({
-    Name = "Mudar Cor do Player ESP",
-    Default = Color3.fromRGB(0, 255, 128),
-    Callback = function(Value)
-        Config.ESPColor = Value
-    end
-})
+-- Imagem de Fundo Transparente
+local BackgroundImage = Instance.new("ImageLabel")
+BackgroundImage.Name = "BackgroundImage"
+BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
+BackgroundImage.Position = UDim2.new(0, 0, 0, 0)
+BackgroundImage.BackgroundTransparency = 1
+BackgroundImage.Image = "rbxassetid://111837850012187"
+BackgroundImage.ImageTransparency = 0.5
+BackgroundImage.ScaleType = Enum.ScaleType.Crop
+BackgroundImage.ZIndex = 1
+BackgroundImage.Parent = MainFrame
 
-TabESP:AddToggle({
-    Name = "Nametag ESP",
-    Default = false,
-    Callback = function(Value)
-        Config.NametagESP = Value
-    end    
-})
+-- Barra Superior (Header - Área onde clica para arrastar)
+local Header = Instance.new("Frame")
+Header.Name = "Header"
+Header.Size = UDim2.new(1, 0, 0, 40)
+Header.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Header.BackgroundTransparency = 0.2
+Header.BorderSizePixel = 0
+Header.ZIndex = 2
+Header.Parent = MainFrame
 
-TabESP:AddColorpicker({
-    Name = "Mudar Cor da Nametag",
-    Default = Color3.fromRGB(255, 255, 255),
-    Callback = function(Value)
-        Config.NametagColor = Value
-    end
-})
+local HeaderCorner = Instance.new("UICorner")
+HeaderCorner.CornerRadius = UDim.new(0, 10)
+HeaderCorner.Parent = Header
 
-TabESP:AddToggle({
-    Name = "Line ESP (Linhas na Tela)",
-    Default = false,
-    Callback = function(Value)
-        Config.LineESP = Value
-    end    
-})
+-- Nome no Canto Direito do Cabeçalho
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(0, 200, 1, 0)
+Title.Position = UDim2.new(1, -260, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "BlenderStudio's Lite"
+Title.TextColor3 = Color3.fromRGB(255, 120, 0) -- Laranja
+Title.TextSize = 16
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Right
+Title.ZIndex = 3
+Title.Parent = Header
 
---------------------------------------------------------------------------------
--- 2. CATEGORIA: HITBOX
---------------------------------------------------------------------------------
-local TabHitbox = Window:MakeTab({
-    Name = "Hitbox",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
+-- Botão Fechar (X)
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Name = "CloseBtn"
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0, 5)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "✕"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextSize = 16
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.ZIndex = 3
+CloseBtn.Parent = Header
 
-TabHitbox:AddToggle({
-    Name = "Ativar Hitbox",
-    Default = false,
-    Callback = function(Value)
-        Config.HitboxAtiva = Value
-    end    
-})
+CloseBtn.MouseButton1Click:Connect(function()
+    ClickSound:Play()
+    ScreenGui:Destroy()
+end)
 
-TabHitbox:AddSlider({
-    Name = "Aumentar Tamanho da Hitbox",
-    Min = 1,
-    Max = 5,
-    Default = 2,
-    Color = Color3.fromRGB(255, 255, 255),
-    Increment = 1,
-    ValueName = "x",
-    Callback = function(Value)
-        Config.HitboxTamanho = Value
-    end    
-})
+-- Botão Minimizar (-)
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Name = "MinimizeBtn"
+MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+MinimizeBtn.Position = UDim2.new(1, -65, 0, 5)
+MinimizeBtn.BackgroundTransparency = 1
+MinimizeBtn.Text = "—"
+MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeBtn.TextSize = 14
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.ZIndex = 3
+MinimizeBtn.Parent = Header
 
-TabHitbox:AddToggle({
-    Name = "Mostrar Hitbox (Visível)",
-    Default = false,
-    Callback = function(Value)
-        Config.MostrarHitbox = Value
-    end    
-})
+local Container = Instance.new("Frame")
+Container.Name = "Container"
+Container.Size = UDim2.new(1, 0, 1, -40)
+Container.Position = UDim2.new(0, 0, 0, 40)
+Container.BackgroundTransparency = 1
+Container.ZIndex = 2
+Container.Parent = MainFrame
 
-TabHitbox:AddColorpicker({
-    Name = "Mudar Cor do Hitbox",
-    Default = Color3.fromRGB(255, 0, 0),
-    Callback = function(Value)
-        Config.HitboxCor = Value
-    end
-})
-
---------------------------------------------------------------------------------
--- 3. CATEGORIA: PAINEL HD-ADMIN
---------------------------------------------------------------------------------
-local TabAdmin = Window:MakeTab({
-    Name = "HD Admin",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-TabAdmin:AddButton({
-    Name = "Criar Painel Separado HD-Admin",
-    Callback = function()
-        -- Criação da Janela Flutuante Independente
-        local CoreGui = game:GetService("CoreGui")
-        local ScreenGui = Instance.new("ScreenGui")
-        ScreenGui.Name = "HDAdminFloatingPanel"
-        ScreenGui.Parent = CoreGui
-
-        local Frame = Instance.new("Frame")
-        Frame.Size = UDim2.new(0, 220, 0, 260)
-        Frame.Position = UDim2.new(0.5, -110, 0.3, 0)
-        Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-        Frame.Active = true
-        Frame.Draggable = true
-        Frame.Parent = ScreenGui
-
-        local Title = Instance.new("TextLabel")
-        Title.Size = UDim2.new(1, 0, 0, 30)
-        Title.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-        Title.Text = "PAINEL HD-ADMIN"
-        Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-        Title.Font = Enum.Font.SourceSansBold
-        Title.TextSize = 14
-        Title.Parent = Frame
-
-        local CloseBtn = Instance.new("TextButton")
-        CloseBtn.Size = UDim2.new(0, 25, 0, 25)
-        CloseBtn.Position = UDim2.new(1, -27, 0, 2)
-        CloseBtn.Text = "X"
-        CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-        CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        CloseBtn.Parent = Title
-        CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-
-        local Scroll = Instance.new("ScrollingFrame")
-        Scroll.Size = UDim2.new(1, -10, 1, -40)
-        Scroll.Position = UDim2.new(0, 5, 0, 35)
-        Scroll.BackgroundTransparency = 1
-        Scroll.Parent = Frame
-
-        local ComandosHD = {
-            ";fly", ";unfly", ";god", ";ungod", ";noclip", ";clip",
-            ";invisible", ";visible", ";speed 50", ";jump 100",
-            ";kill", ";respawn", ";bring", ";goto", ";btools", ";ff", ";unff"
-        }
-
-        Scroll.CanvasSize = UDim2.new(0, 0, 0, #ComandosHD * 28)
-
-        for i, cmd in ipairs(ComandosHD) do
-            local BtnCmd = Instance.new("TextButton")
-            BtnCmd.Size = UDim2.new(1, -10, 0, 25)
-            BtnCmd.Position = UDim2.new(0, 0, 0, (i - 1) * 28)
-            BtnCmd.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-            BtnCmd.Text = cmd
-            BtnCmd.TextColor3 = Color3.fromRGB(255, 255, 255)
-            BtnCmd.Font = Enum.Font.SourceSans
-            BtnCmd.TextSize = 13
-            BtnCmd.Parent = Scroll
-
-            BtnCmd.MouseButton1Click:Connect(function()
-                local TextChatService = game:GetService("TextChatService")
-                if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-                    local channel = TextChatService.TextChannels.RBXGeneral
-                    if channel then channel:SendAsync(cmd) end
-                else
-                    game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(cmd, "All")
-                end
-            end)
-        end
-    end
-})
-
---------------------------------------------------------------------------------
--- 4. LOOP DAS FUNCIONALIDADES (ESP & HITBOX)
---------------------------------------------------------------------------------
-local LinesTable = {}
-
-game:GetService("RunService").RenderStepped:Connect(function()
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local char = p.Character
-            local hrp = char.HumanoidRootPart
-
-            -- 1. Player ESP (Highlight)
-            local hl = char:FindFirstChild("Delta_Highlight")
-            if Config.PlayerESP then
-                if not hl then
-                    hl = Instance.new("Highlight")
-                    hl.Name = "Delta_Highlight"
-                    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                    hl.Parent = char
-                end
-                hl.FillColor = Config.ESPColor
-            else
-                if hl then hl:Destroy() end
-            end
-
-            -- 2. Nametag ESP
-            local head = char:FindFirstChild("Head")
-            if head then
-                local tag = head:FindFirstChild("Delta_Nametag")
-                if Config.NametagESP then
-                    if not tag then
-                        tag = Instance.new("BillboardGui")
-                        tag.Name = "Delta_Nametag"
-                        tag.Size = UDim2.new(0, 100, 0, 30)
-                        tag.StudsOffset = Vector3.new(0, 2, 0)
-                        tag.AlwaysOnTop = true
-                        
-                        local txt = Instance.new("TextLabel", tag)
-                        txt.Name = "Texto"
-                        txt.Size = UDim2.new(1, 0, 1, 0)
-                        txt.BackgroundTransparency = 1
-                        txt.Font = Enum.Font.SourceSansBold
-                        txt.TextSize = 14
-                        tag.Parent = head
-                    end
-                    tag.Texto.Text = p.Name
-                    tag.Texto.TextColor3 = Config.NametagColor
-                else
-                    if tag then tag:Destroy() end
-                end
-            end
-
-            -- 3. Hitbox
-            if Config.HitboxAtiva then
-                local mult = Config.HitboxTamanho
-                hrp.Size = Vector3.new(2 * mult, 2 * mult, 1 * mult)
-                hrp.Transparency = Config.MostrarHitbox and 0.5 or 1
-                hrp.Color = Config.HitboxCor
-                hrp.Material = Enum.Material.ForceField
-                hrp.CanCollide = false
-            else
-                hrp.Size = Vector3.new(2, 2, 1)
-                hrp.Transparency = 1
-            end
-        end
+local isMinimized = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+    ClickSound:Play()
+    isMinimized = not isMinimized
+    if isMinimized then
+        MainFrame:TweenSize(UDim2.new(0, 620, 0, 40), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.3, true)
+        Container.Visible = false
+    else
+        MainFrame:TweenSize(UDim2.new(0, 620, 0, 380), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.3, true)
+        task.wait(0.15)
+        Container.Visible = true
     end
 end)
 
-OrionLib:Init()
+-- Painel Lateral Esquerdo
+local Sidebar = Instance.new("Frame")
+Sidebar.Name = "Sidebar"
+Sidebar.Size = UDim2.new(0, 150, 1, -10)
+Sidebar.Position = UDim2.new(0, 5, 0, 0)
+Sidebar.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+Sidebar.BackgroundTransparency = 0.3
+Sidebar.BorderSizePixel = 0
+Sidebar.ZIndex = 2
+Sidebar.Parent = Container
+
+local SideCorner = Instance.new("UICorner")
+SideCorner.CornerRadius = UDim.new(0, 8)
+SideCorner.Parent = Sidebar
+
+local SideLabel = Instance.new("TextLabel")
+SideLabel.Size = UDim2.new(1, 0, 0, 30)
+SideLabel.Position = UDim2.new(0, 10, 0, 10)
+SideLabel.BackgroundTransparency = 1
+SideLabel.Text = "⚙ Ferramentas"
+SideLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+SideLabel.TextSize = 13
+SideLabel.Font = Enum.Font.GothamMedium
+SideLabel.TextXAlignment = Enum.TextXAlignment.Left
+SideLabel.ZIndex = 3
+SideLabel.Parent = Sidebar
+
+-- Área de Conteúdo Direita (Onde ficam os 5 Botões)
+local ContentArea = Instance.new("ScrollingFrame")
+ContentArea.Name = "ContentArea"
+ContentArea.Size = UDim2.new(1, -170, 1, -10)
+ContentArea.Position = UDim2.new(0, 160, 0, 0)
+ContentArea.BackgroundTransparency = 1
+ContentArea.BorderSizePixel = 0
+ContentArea.ScrollBarThickness = 3
+ContentArea.ScrollBarImageColor3 = Color3.fromRGB(255, 120, 0)
+ContentArea.ZIndex = 2
+ContentArea.Parent = Container
+
+local UIList = Instance.new("UIListLayout")
+UIList.Parent = ContentArea
+UIList.SortOrder = Enum.SortOrder.LayoutOrder
+UIList.Padding = UDim.new(0, 8)
+
+-- Função para criar os botões com som de clique embutido
+local function CreateButton(text, callback)
+    local Btn = Instance.new("TextButton")
+    Btn.Name = text
+    Btn.Size = UDim2.new(1, -10, 0, 48)
+    Btn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+    Btn.BackgroundTransparency = 0.2
+    Btn.Text = "  " .. text
+    Btn.TextColor3 = Color3.fromRGB(240, 240, 240)
+    Btn.Font = Enum.Font.GothamMedium
+    Btn.TextSize = 14
+    Btn.TextXAlignment = Enum.TextXAlignment.Left
+    Btn.AutoButtonColor = false
+    Btn.ZIndex = 3
+    Btn.Parent = ContentArea
+
+    local BtnCorner = Instance.new("UICorner")
+    BtnCorner.CornerRadius = UDim.new(0, 6)
+    BtnCorner.Parent = Btn
+
+    local BtnStroke = Instance.new("UIStroke")
+    BtnStroke.Color = Color3.fromRGB(45, 45, 45)
+    BtnStroke.Thickness = 1
+    BtnStroke.Parent = Btn
+
+    -- Efeito Hover
+    Btn.MouseEnter:Connect(function()
+        Btn.BackgroundColor3 = Color3.fromRGB(38, 38, 38)
+        BtnStroke.Color = Color3.fromRGB(255, 120, 0)
+    end)
+
+    Btn.MouseLeave:Connect(function()
+        Btn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+        BtnStroke.Color = Color3.fromRGB(45, 45, 45)
+    end)
+
+    -- Toca o som e executa a função ao clicar
+    Btn.MouseButton1Click:Connect(function()
+        ClickSound:Play()
+        callback()
+    end)
+end
+
+-- Lista dos 5 Botões Solicitados
+local buttons = {
+    "BlenderCopyLite",
+    "BlenderAnimatorLite",
+    "BlenderIA",
+    "BlenderRonlox'Studio",
+    "BlenderModeladorLite"
+}
+
+for _, name in ipairs(buttons) do
+    CreateButton(name, function()
+        print("[BlenderStudio] Botão clicado: " .. name)
+    end)
+end
+
+-- Lógica para Arrastar (Drag System)
+local dragging, dragInput, dragStart, startPos
+
+Header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+Header.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale, 
+            startPos.X.Offset + delta.X, 
+            startPos.Y.Scale, 
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
