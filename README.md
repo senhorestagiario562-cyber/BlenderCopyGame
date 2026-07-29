@@ -388,4 +388,3 @@ end)
 CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
-# BlenderCopyGame
