@@ -403,10 +403,3 @@ jumpBtn.MouseButton1Click:Connect(function()
 		jumpBtn.BackgroundColor3 = highJump and Color3.fromRGB(0, 160, 80) or Color3.fromRGB(40, 40, 60)
 	end
 end)
-
-```
-### O que mudou no formato Script Hub?
- * **Navegação por Abas (Tab System):** Menu lateral categorizado para alternar entre as funções sem poluir a tela.
- * **Janela Arrastável:** O painel principal pode ser movido com o mouse para qualquer canto do jogo.
- * **Aba de Utilitários Adicionada:** Atalhos rápidos como *Super Velocidade* e *Super Pulo* para facilitar testes.
- * **Design Dark Mode Moderno:** Visual inspirado nos principais hubs de desenvolvimento do Roblox.
