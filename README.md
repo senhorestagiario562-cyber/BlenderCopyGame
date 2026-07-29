@@ -1,7 +1,3 @@
-Aqui está a versão do script transformada em um **Script Hub** completo.
-O código foi reestruturado com uma interface estilo **Hub moderno (com abas/tabs e navegação por categoria)**, barra lateral, sistema de minimização suave, além de novos atalhos e utilitários integrados para facilitar a criação e os testes dentro do jogo.
-### Script Hub Completo (Luau)
-```lua
 -- Coloque este LocalScript em StarterPlayerScripts ou StarterGui
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
