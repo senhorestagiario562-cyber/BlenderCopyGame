@@ -1,390 +1,228 @@
--- ========================================================
--- ADVANCED MULTI-TOOL SCRIPT HUB
--- ========================================================
-
-local HttpService = game:GetService("HttpService")
+-- Coloque este LocalScript dentro de StarterPlayer -> StarterPlayerScripts ou StarterGui
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
--- Instância da ScreenGui principal
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "AdvancedHubGUI"
-ScreenGui.Parent = game:GetService("CoreGui") or LocalPlayer:WaitForChild("PlayerGui")
-ScreenGui.ResetOnSpawn = false
+-- Configurações Globais
+local CORRECT_KEY = "CopyGame"
+local isKeyVerified = false
 
--- Frame Principal
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-MainFrame.Position = UDim2.new(0.25, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 580, 0, 360)
-MainFrame.Active = true
-MainFrame.Draggable = true
+-- 1. Criação da Interface do Usuário (ScreenGui)
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "DevStudioPanel"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 10)
-MainCorner.Parent = MainFrame
+-- Botão Flutuante de Abrir/Fechar
+local toggleButton = Instance.new("TextButton")
+toggleButton.Name = "ToggleButton"
+toggleButton.Size = UDim2.new(0, 120, 0, 40)
+toggleButton.Position = UDim2.new(0.02, 0, 0.45, 0)
+toggleButton.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Text = "Abrir Painel"
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.TextSize = 16
+toggleButton.Parent = screenGui
 
--- Barra Superior (Título e Botões)
-local TopBar = Instance.new("Frame")
-TopBar.Name = "TopBar"
-TopBar.Parent = MainFrame
-TopBar.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
-TopBar.Size = UDim2.new(1, 0, 0, 35)
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 8)
+btnCorner.Parent = toggleButton
 
-local TopBarCorner = Instance.new("UICorner")
-TopBarCorner.CornerRadius = UDim.new(0, 10)
-TopBarCorner.Parent = TopBar
+-- Painel Principal
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 480, 0, 320)
+mainFrame.Position = UDim2.new(0.5, -240, 0.5, -160)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+mainFrame.Visible = false
+mainFrame.Parent = screenGui
 
-local Title = Instance.new("TextLabel")
-Title.Parent = TopBar
-Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0, 12, 0, 0)
-Title.Size = UDim2.new(0, 200, 1, 0)
-Title.Font = Enum.Font.SourceSansBold
-Title.Text = "ADVANCED HUB | AI & UTILITIES"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 15
-Title.TextXAlignment = Enum.TextXAlignment.Left
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 10)
+frameCorner.Parent = mainFrame
 
--- Botão Fechar
-CloseBtn = Instance.new("TextButton")
-CloseBtn.Parent = TopBar
-CloseBtn.BackgroundColor3 = Color3.fromRGB(230, 60, 60)
-CloseBtn.Position = UDim2.new(1, -28, 0.15, 0)
-CloseBtn.Size = UDim2.new(0, 22, 0, 22)
-CloseBtn.Font = Enum.Font.SourceSansBold
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.TextSize = 13
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 4)
-CloseCorner.Parent = CloseBtn
+-- Título do Painel
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
+titleLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Text = "🛠️ Painel Dev & Studio Assistant"
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 18
+titleLabel.Parent = mainFrame
 
--- Botão Minimizar
-MinimizeBtn = Instance.new("TextButton")
-MinimizeBtn.Parent = TopBar
-MinimizeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-MinimizeBtn.Position = UDim2.new(1, -55, 0.15, 0)
-MinimizeBtn.Size = UDim2.new(0, 22, 0, 22)
-MinimizeBtn.Font = Enum.Font.SourceSansBold
-MinimizeBtn.Text = "-"
-MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinimizeBtn.TextSize = 16
-local MinCorner = Instance.new("UICorner")
-MinCorner.CornerRadius = UDim.new(0, 4)
-MinCorner.Parent = MinimizeBtn
+-- 2. Sistema de Key (Código "CopyGame")
+local keyFrame = Instance.new("Frame")
+keyFrame.Size = UDim2.new(1, 0, 1, -40)
+keyFrame.Position = UDim2.new(0, 0, 0, 40)
+keyFrame.BackgroundTransparency = 1
+keyFrame.Parent = mainFrame
 
--- Botão Flutuante (Reabrir)
-local OpenBtn = Instance.new("TextButton")
-OpenBtn.Name = "OpenHubBtn"
-OpenBtn.Parent = ScreenGui
-OpenBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-OpenBtn.Position = UDim2.new(0, 15, 0.5, 0)
-OpenBtn.Size = UDim2.new(0, 85, 0, 32)
-OpenBtn.Font = Enum.Font.SourceSansBold
-OpenBtn.Text = "Open Hub"
-OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-OpenBtn.TextSize = 14
-OpenBtn.Visible = false
-OpenBtn.Active = true
-OpenBtn.Draggable = true
-local OpenCorner = Instance.new("UICorner")
-OpenCorner.CornerRadius = UDim.new(0, 6)
-OpenCorner.Parent = OpenBtn
+local keyInput = Instance.new("TextBox")
+keyInput.Size = UDim2.new(0, 250, 0, 40)
+keyInput.Position = UDim2.new(0.5, -125, 0.3, 0)
+keyInput.PlaceholderText = "Digite a Key aqui..."
+keyInput.Text = ""
+keyInput.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+keyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyInput.Font = Enum.Font.SourceSans
+keyInput.TextSize = 16
+keyInput.Parent = keyFrame
 
--- Sidebar (Categorias)
-local Sidebar = Instance.new("Frame")
-Sidebar.Parent = MainFrame
-Sidebar.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
-Sidebar.Position = UDim2.new(0, 0, 0, 35)
-Sidebar.Size = UDim2.new(0, 140, 1, -35)
+local keySubmit = Instance.new("TextButton")
+keySubmit.Size = UDim2.new(0, 150, 0, 35)
+keySubmit.Position = UDim2.new(0.5, -75, 0.55, 0)
+keySubmit.BackgroundColor3 = Color3.fromRGB(0, 170, 100)
+keySubmit.TextColor3 = Color3.fromRGB(255, 255, 255)
+keySubmit.Text = "Verificar Key"
+keySubmit.Font = Enum.Font.SourceSansBold
+keySubmit.TextSize = 16
+keySubmit.Parent = keyFrame
 
-local SidebarList = Instance.new("UIListLayout")
-SidebarList.Parent = Sidebar
-SidebarList.SortOrder = Enum.SortOrder.LayoutOrder
-SidebarList.Padding = UDim.new(0, 4)
+-- Conteúdo Principal (Liberado após a Key)
+local contentFrame = Instance.new("Frame")
+contentFrame.Size = UDim2.new(1, 0, 1, -40)
+contentFrame.Position = UDim2.new(0, 0, 0, 40)
+contentFrame.BackgroundTransparency = 1
+contentFrame.Visible = false
+contentFrame.Parent = mainFrame
 
--- Container principal para os conteúdos
-local Container = Instance.new("Frame")
-Container.Parent = MainFrame
-Container.BackgroundTransparency = 1
-Container.Position = UDim2.new(0, 145, 0, 40)
-Container.Size = UDim2.new(1, -150, 1, -45)
+-- Botões do Painel de Ferramentas
+local btnCopyWorkspace = Instance.new("TextButton")
+btnCopyWorkspace.Size = UDim2.new(0, 200, 0, 40)
+btnCopyWorkspace.Position = UDim2.new(0.05, 0, 0.1, 0)
+btnCopyWorkspace.BackgroundColor3 = Color3.fromRGB(50, 100, 200)
+btnCopyWorkspace.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnCopyWorkspace.Text = "📦 Salvar Workspace Local"
+btnCopyWorkspace.Font = Enum.Font.SourceSansBold
+btnCopyWorkspace.TextSize = 14
+btnCopyWorkspace.Parent = contentFrame
 
-----------------------------------------------------
--- SISTEMA DE ABAS E CRIAÇÃO DE UI
-----------------------------------------------------
-local Pages = {}
+local btnAnimTool = Instance.new("TextButton")
+btnAnimTool.Size = UDim2.new(0, 200, 0, 40)
+btnAnimTool.Position = UDim2.new(0.52, 0, 0.1, 0)
+btnAnimTool.BackgroundColor3 = Color3.fromRGB(180, 80, 200)
+btnAnimTool.TextColor3 = Color3.fromRGB(255, 255, 255)
+btnAnimTool.Text = "🎬 Criar Animação (Pose)"
+btnAnimTool.Font = Enum.Font.SourceSansBold
+btnAnimTool.TextSize = 14
+btnAnimTool.Parent = contentFrame
 
-local function CreateTab(name)
-    local TabBtn = Instance.new("TextButton")
-    TabBtn.Parent = Sidebar
-    TabBtn.Size = UDim2.new(1, 0, 0, 35)
-    TabBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 35)
-    TabBtn.Font = Enum.Font.SourceSans
-    TabBtn.Text = name
-    TabBtn.TextColor3 = Color3.fromRGB(180, 180, 190)
-    TabBtn.TextSize = 14
+-- Área do Assistente de IA
+local aiLabel = Instance.new("TextLabel")
+aiLabel.Size = UDim2.new(0.9, 0, 0, 25)
+aiLabel.Position = UDim2.new(0.05, 0, 0.32, 0)
+aiLabel.BackgroundTransparency = 1
+aiLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+aiLabel.Text = "🤖 Assistente de Programação IA:"
+aiLabel.Font = Enum.Font.SourceSansBold
+aiLabel.TextSize = 14
+aiLabel.TextXAlignment = Enum.TextXAlignment.Left
+aiLabel.Parent = contentFrame
 
-    local PageFrame = Instance.new("ScrollingFrame")
-    PageFrame.Parent = Container
-    PageFrame.Size = UDim2.new(1, 0, 1, 0)
-    PageFrame.BackgroundTransparency = 1
-    PageFrame.Visible = false
-    PageFrame.ScrollBarThickness = 4
-    PageFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-    PageFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+local aiPrompt = Instance.new("TextBox")
+aiPrompt.Size = UDim2.new(0.9, 0, 0, 35)
+aiPrompt.Position = UDim2.new(0.05, 0, 0.42, 0)
+aiPrompt.PlaceholderText = "Ex: Crie um script de corrida ou porta..."
+aiPrompt.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+aiPrompt.TextColor3 = Color3.fromRGB(255, 255, 255)
+aiPrompt.Font = Enum.Font.SourceSans
+aiPrompt.TextSize = 14
+aiPrompt.Parent = contentFrame
 
-    local PageList = Instance.new("UIListLayout")
-    PageList.Parent = PageFrame
-    PageList.SortOrder = Enum.SortOrder.LayoutOrder
-    PageList.Padding = UDim.new(0, 8)
+local aiResponse = Instance.new("TextLabel")
+aiResponse.Size = UDim2.new(0.9, 0, 0, 80)
+aiResponse.Position = UDim2.new(0.05, 0, 0.58, 0)
+aiResponse.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+aiResponse.TextColor3 = Color3.fromRGB(100, 255, 100)
+aiResponse.Text = "Aguardando seu pedido de script..."
+aiResponse.Font = Enum.Font.Code
+aiResponse.TextSize = 12
+aiResponse.TextWrapped = true
+aiResponse.Parent = contentFrame
 
-    Pages[name] = {Frame = PageFrame, Button = TabBtn}
+-- 3. Lógica e Funcionalidades
 
-    TabBtn.MouseButton1Click:Connect(function()
-        for _, p in pairs(Pages) do
-            p.Frame.Visible = false
-            p.Button.BackgroundColor3 = Color3.fromRGB(28, 28, 35)
-            p.Button.TextColor3 = Color3.fromRGB(180, 180, 190)
-        end
-        PageFrame.Visible = true
-        TabBtn.BackgroundColor3 = Color3.fromRGB(50, 90, 180)
-        TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    end)
-
-    return PageFrame
-end
-
-local function CreateButton(parent, text, color, callback)
-    local Btn = Instance.new("TextButton")
-    Btn.Parent = parent
-    Btn.Size = UDim2.new(1, -10, 0, 32)
-    Btn.BackgroundColor3 = color or Color3.fromRGB(45, 45, 55)
-    Btn.Font = Enum.Font.SourceSansBold
-    Btn.Text = text
-    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Btn.TextSize = 14
-    
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 5)
-    Corner.Parent = Btn
-
-    Btn.MouseButton1Click:Connect(callback)
-    return Btn
-end
-
-local function CreateTextBox(parent, placeholder)
-    local Box = Instance.new("TextBox")
-    Box.Parent = parent
-    Box.Size = UDim2.new(1, -10, 0, 32)
-    Box.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-    Box.Font = Enum.Font.SourceSans
-    Box.PlaceholderText = placeholder
-    Box.Text = ""
-    Box.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Box.TextSize = 14
-
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 5)
-    Corner.Parent = Box
-
-    return Box
-end
-
-----------------------------------------------------
--- 1. SISTEMA: COPY WORKSPACE
-----------------------------------------------------
-local CopyPage = CreateTab("Copy Workspace")
-
-CreateButton(CopyPage, "Salvar Mapa Completo (saveinstance)", Color3.fromRGB(40, 120, 60), function()
-    if saveinstance then
-        print("[Hub] Copiando e salvando Workspace...")
-        saveinstance()
-    else
-        warn("[Hub] Seu executor não possui suporte para 'saveinstance'")
-    end
+-- Botão Abrir / Fechar
+toggleButton.MouseButton1Click:Connect(function()
+	mainFrame.Visible = not mainFrame.Visible
+	toggleButton.Text = mainFrame.Visible and "Fechar Painel" or "Abrir Painel"
 end)
 
-CreateButton(CopyPage, "Copiar Estrutura p/ Clipboard", Color3.fromRGB(50, 90, 180), function()
-    if setclipboard then
-        local data = "Workspace Children:\n"
-        for _, v in pairs(game.Workspace:GetChildren()) do
-            data = data .. "- " .. v.Name .. " [" .. v.ClassName .. "]\n"
-        end
-        setclipboard(data)
-        print("[Hub] Nomes salvos na área de transferência!")
-    end
+-- Validação da Key "CopyGame"
+keySubmit.MouseButton1Click:Connect(function()
+	if keyInput.Text == CORRECT_KEY then
+		isKeyVerified = true
+		keyFrame.Visible = false
+		contentFrame.Visible = true
+		titleLabel.Text = "🛠️ Painel Dev - Acesso Liberado"
+	else
+		keyInput.Text = ""
+		keyInput.PlaceholderText = "Key Incorreta! Tente novamente."
+	end
 end)
 
-CreateButton(CopyPage, "Clonar Objetos Selecionados para ReplicatedStorage", Color3.fromRGB(70, 70, 90), function()
-    for _, v in pairs(game.Workspace:GetChildren()) do
-        if v:IsA("Model") or v:IsA("Part") then
-            pcall(function()
-                local clone = v:Clone()
-                if clone then clone.Parent = game:GetService("ReplicatedStorage") end
-            end)
-        end
-    end
-    print("[Hub] Clones enviados para ReplicatedStorage!")
+-- Funcionalidade: Salvar/Copiar Objetos do Workspace para uma Pasta
+btnCopyWorkspace.MouseButton1Click:Connect(function()
+	local copyFolder = ReplicatedStorage:FindFirstChild("CopyWorkspace")
+	if not copyFolder then
+		copyFolder = Instance.new("Folder")
+		copyFolder.Name = "CopyWorkspace"
+		copyFolder.Parent = ReplicatedStorage
+	end
+
+	local copiedCount = 0
+	for _, item in pairs(workspace:GetChildren()) do
+		-- Evita copiar a câmera e os personagens dos jogadores
+		if not item:IsA("Camera") and not Players:GetPlayerFromCharacter(item) then
+			local clone = item:Clone()
+			if clone then
+				clone.Parent = copyFolder
+				copiedCount = copiedCount + 1
+			end
+		end
+	end
+
+	aiResponse.Text = "✅ " .. tostring(copiedCount) .. " objetos do Workspace foram duplicados com sucesso para ReplicatedStorage.CopyWorkspace!"
 end)
 
-----------------------------------------------------
--- 2. SISTEMA: ASSISTENTE COM IA
-----------------------------------------------------
-local AIPage = CreateTab("Sistema com IA")
+-- Funcionalidade: Ferramenta de Animação Básica (Salvar Pose R6/R15)
+btnAnimTool.MouseButton1Click:Connect(function()
+	local char = LocalPlayer.Character
+	if char and char:FindFirstChild("Humanoid") then
+		local poseFolder = Instance.new("Folder")
+		poseFolder.Name = "SavedPose_" .. os.time()
+		poseFolder.Parent = ReplicatedStorage
 
-local AIInput = CreateTextBox(AIPage, "Digite sua pergunta ou pedido de script...")
-local AIResponse = Instance.new("TextLabel")
-AIResponse.Parent = AIPage
-AIResponse.Size = UDim2.new(1, -10, 0, 120)
-AIResponse.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
-AIResponse.Font = Enum.Font.SourceSans
-AIResponse.Text = "Aguardando pergunta..."
-AIResponse.TextColor3 = Color3.fromRGB(200, 200, 200)
-AIResponse.TextSize = 13
-AIResponse.TextWrapped = true
-AIResponse.TextYAlignment = Enum.TextYAlignment.Top
-
-local AICorner = Instance.new("UICorner")
-AICorner.CornerRadius = UDim.new(0, 5)
-AICorner.Parent = AIResponse
-
-CreateButton(AIPage, "Perguntar à IA", Color3.fromRGB(100, 60, 180), function()
-    local prompt = AIInput.Text
-    if prompt == "" then return end
-    AIResponse.Text = "Pensando..."
-
-    task.spawn(function()
-        local success, res = pcall(function()
-            local request = (syn and syn.request) or (http and http.request) or http_request or request
-            if request then
-                local response = request({
-                    Url = "https://text.pollinations.ai/" .. HttpService:UrlEncode("Responda em portugues e de forma direta para Roblox Lua: " .. prompt),
-                    Method = "GET"
-                })
-                return response.Body
-            end
-        end)
-
-        if success and res then
-            AIResponse.Text = res
-        else
-            AIResponse.Text = "Erro ao conectar com a API de IA. Verifique se seu executor suporta requisições HTTP."
-        end
-    end)
+		for _, joint in pairs(char:GetDescendants()) do
+			if joint:IsA("Motor6D") then
+				local jointData = Instance.new("StringValue")
+				jointData.Name = joint.Name
+				jointData.Value = tostring(joint.C0)
+				jointData.Parent = poseFolder
+			end
+		end
+		aiResponse.Text = "🎬 Pose atual do seu personagem foi capturada e salva em ReplicatedStorage!"
+	else
+		aiResponse.Text = "❌ Erro: Personagem não encontrado."
+	end
 end)
 
-CreateButton(AIPage, "Copiar Resposta da IA", Color3.fromRGB(60, 60, 70), function()
-    if setclipboard and AIResponse.Text ~= "" then
-        setclipboard(AIResponse.Text)
-        print("[Hub] Resposta copiada!")
-    end
-end)
-
-----------------------------------------------------
--- 3. SISTEMA: GERENCIADOR DE ANIMAÇÕES
-----------------------------------------------------
-local AnimPage = CreateTab("Sistema de Animação")
-
-local AnimInput = CreateTextBox(AnimPage, "Insira o Asset ID da Animação (ex: 1234567)")
-local SpeedInput = CreateTextBox(AnimPage, "Velocidade da Animação (Padrão: 1)")
-
-local currentTrack = nil
-
-CreateButton(AnimPage, "Tocar Animação (Play)", Color3.fromRGB(40, 140, 70), function()
-    local animId = AnimInput.Text
-    local speed = tonumber(SpeedInput.Text) or 1
-    
-    if animId == "" then return end
-    
-    local char = LocalPlayer.Character
-    if char and char:FindFirstChild("Humanoid") then
-        local humanoid = char.Humanoid
-        local animation = Instance.new("Animation")
-        animation.AnimationId = "rbxassetid://" .. animId
-        
-        if currentTrack then currentTrack:Stop() end
-        
-        currentTrack = humanoid:LoadAnimation(animation)
-        currentTrack:Play()
-        currentTrack:AdjustSpeed(speed)
-        print("[Hub] Reproduzindo animação: " .. animId)
-    end
-end)
-
-CreateButton(AnimPage, "Pausar / Retomar", Color3.fromRGB(180, 120, 40), function()
-    if currentTrack then
-        if currentTrack.IsPlaying then
-            currentTrack:AdjustSpeed(0)
-        else
-            local speed = tonumber(SpeedInput.Text) or 1
-            currentTrack:AdjustSpeed(speed)
-        end
-    end
-end)
-
-CreateButton(AnimPage, "Parar Animação (Stop)", Color3.fromRGB(180, 50, 50), function()
-    if currentTrack then
-        currentTrack:Stop()
-        print("[Hub] Animação interrompida.")
-    end
-end)
-
-----------------------------------------------------
--- 4. SISTEMA: COPY GUI
-----------------------------------------------------
-local CopyGuiPage = CreateTab("Copy GUI")
-
-local TargetPlayerInput = CreateTextBox(CopyGuiPage, "Nome exato do Jogador (Alvo)")
-
-CreateButton(CopyGuiPage, "Copiar PlayerGui do Jogador Alvo", Color3.fromRGB(160, 80, 40), function()
-    local targetName = TargetPlayerInput.Text
-    local targetPlayer = Players:FindFirstChild(targetName)
-
-    if targetPlayer and targetPlayer:FindFirstChild("PlayerGui") then
-        for _, gui in pairs(targetPlayer.PlayerGui:GetChildren()) do
-            pcall(function()
-                local clonedGui = gui:Clone()
-                clonedGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-            end)
-        end
-        print("[Hub] Interface do jogador " .. targetName .. " clonada com sucesso!")
-    else
-        warn("[Hub] Jogador não encontrado ou PlayerGui inacessível.")
-    end
-end)
-
-CreateButton(CopyGuiPage, "Exportar Código de todas Guis Ativas", Color3.fromRGB(60, 90, 150), function()
-    if setclipboard then
-        local guiNames = "Guis Encontradas na PlayerGui:\n"
-        for _, v in pairs(LocalPlayer.PlayerGui:GetChildren()) do
-            guiNames = guiNames .. "- " .. v.Name .. " [" .. v.ClassName .. "]\n"
-        end
-        setclipboard(guiNames)
-        print("[Hub] Nomes das GUIs salvos no clipboard!")
-    end
-end)
-
-----------------------------------------------------
--- GERENCIAMENTO DE JANELA (Minimizar / Fechar)
-----------------------------------------------------
-Pages["Copy Workspace"].Frame.Visible = true
-Pages["Copy Workspace"].Button.BackgroundColor3 = Color3.fromRGB(50, 90, 180)
-Pages["Copy Workspace"].Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-MinimizeBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = false
-    OpenBtn.Visible = true
-end)
-
-OpenBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = true
-    OpenBtn.Visible = false
-end)
-
-CloseBtn.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
+-- Funcionalidade: Resposta do Assistente de Código (IA de Exemplo)
+aiPrompt.FocusLost:Connect(function(enterPressed)
+	if enterPressed and aiPrompt.Text ~= "" then
+		local query = string.lower(aiPrompt.Text)
+		
+		if string.find(query, "corrida") or string.find(query, "speed") then
+			aiResponse.Text = "-- Script de Velocidade:\nHumanoid.WalkSpeed = 32"
+		elseif string.find(query, "pulo") or string.find(query, "jump") then
+			aiResponse.Text = "-- Script de Pulo:\nHumanoid.JumpPower = 100"
+		elseif string.find(query, "porta") or string.find(query, "door") then
+			aiResponse.Text = "-- Script de Abrir Porta:\nscript.Parent.Touched:Connect(function()\n  script.Parent.Transparency = 0.5\n  script.Parent.CanCollide = false\nend)"
+		else
+			aiResponse.Text = "-- Código gerado para: " .. aiPrompt.Text .. "\nprint('Executando ação personalizada...')"
+		end
+	end
 end)
