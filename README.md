@@ -1,4 +1,4 @@
--- Criaaando a Interface Principal (ScreenGui)
+-- Criando a Interface Principal (ScreenGui)
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
@@ -214,8 +214,31 @@ local function CreateButton(text, callback)
     end)
 end
 
--- Lista dos 5 Botões Solicitados
-local buttons = {
+-- Mapeamento dos botões e suas ações
+local buttonActions = {
+    ["BlenderCopyLite"] = function()
+        print("[BlenderStudio] Botão clicado: BlenderCopyLite")
+    end,
+    ["BlenderAnimatorLite"] = function()
+        print("[BlenderStudio] Botão clicado: BlenderAnimatorLite")
+    end,
+    ["BlenderIA"] = function()
+        print("[BlenderStudio] Botão clicado: BlenderIA")
+    end,
+    ["BlenderRonlox'Studio"] = function()
+        -- Destrói a interface atual antes de carregar o novo script
+        ScreenGui:Destroy()
+        
+        -- Executa o script externo
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/senhorestagiario562-cyber/BlenderCopyGame/refs/heads/main/BlenderRonlox'Studio"))()
+    end,
+    ["BlenderModeladorLite"] = function()
+        print("[BlenderStudio] Botão clicado: BlenderModeladorLite")
+    end
+}
+
+-- Lista ordenada para garantir a ordem de criação dos botões
+local buttonOrder = {
     "BlenderCopyLite",
     "BlenderAnimatorLite",
     "BlenderIA",
@@ -223,10 +246,8 @@ local buttons = {
     "BlenderModeladorLite"
 }
 
-for _, name in ipairs(buttons) do
-    CreateButton(name, function()
-        print("[BlenderStudio] Botão clicado: " .. name)
-    end)
+for _, name in ipairs(buttonOrder) do
+    CreateButton(name, buttonActions[name])
 end
 
 -- Lógica para Arrastar (Drag System)
