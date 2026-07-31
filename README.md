@@ -1,4 +1,4 @@
--- Criando a Interface Principal (ScreenGui)
+-- Criaaando a Interface Principal (ScreenGui)
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
